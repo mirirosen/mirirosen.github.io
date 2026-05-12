@@ -1,0 +1,1498 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>B Notes | תוסף כרום לתמלול הרצאות בעברית</title>
+    <meta name="description" content="B Notes הוא תוסף Chrome לסטודנטים — מתמלל אודיו מהדפדפן בעברית אקדמית, עובד עם Panopto, Zoom, YouTube ועוד, ומארגן פלט מובנה בקליק אחד.">
+    <link rel="canonical" href="https://mirirosen.github.io/">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Sans:wght@300;400;500&family=Syne:wght@500;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --color-bg: #ffffff;
+            --color-bg-dark: #06091F;
+            --color-text: #0A0A14;
+            --color-text-muted: #888888;
+            --color-border: #EBEBF0;
+            --color-accent: #2563EB;
+            --color-accent-light: #60A5FA;
+            --color-accent-subtle: #EEF4FF;
+            --color-stats-bg: #F5F5FA;
+            --font-display: 'Syne', sans-serif;
+            --font-body: 'IBM Plex Sans', sans-serif;
+            --font-mono: 'IBM Plex Mono', monospace;
+            --radius-cta: 6px;
+            --container: 1024px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            font-family: var(--font-body);
+            font-weight: 400;
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a { text-decoration: none; color: inherit; }
+        img, svg { max-width: 100%; display: block; }
+        button { font-family: inherit; cursor: pointer; }
+
+        .font-display { font-family: var(--font-display); }
+        .font-mono-label {
+            font-family: var(--font-mono);
+            font-weight: 400;
+            font-size: 0.7rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--color-text-muted);
+        }
+
+        .container {
+            width: 100%;
+            max-width: var(--container);
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        /* ---------- Nav ---------- */
+        .site-nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--color-bg);
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .site-nav-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 1rem 0;
+            flex-wrap: wrap;
+        }
+
+        .logo-wordmark {
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: 1.35rem;
+            line-height: 1;
+            letter-spacing: -0.02em;
+            display: inline-flex;
+            align-items: baseline;
+        }
+
+        .logo-wordmark .logo-b,
+        .logo-wordmark .logo-notes { color: #0A0A14; }
+        .logo-wordmark .logo-dot { color: var(--color-accent); }
+
+        .nav-links {
+            display: none;
+            align-items: center;
+            gap: 1.25rem;
+        }
+
+        @media (min-width: 480px) {
+            .nav-links { display: flex; }
+        }
+
+        .nav-links a {
+            font-weight: 300;
+            font-size: 0.9375rem;
+            color: var(--color-text-muted);
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover { color: var(--color-text); }
+
+        .btn-cta {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.65rem 1.25rem;
+            font-family: var(--font-display);
+            font-weight: 500;
+            font-size: 0.9375rem;
+            border-radius: var(--radius-cta);
+            border: none;
+            transition: background 0.2s, color 0.2s, border-color 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-cta-primary {
+            background: var(--color-accent);
+            color: #fff;
+        }
+
+        .btn-cta-primary:hover { filter: brightness(1.06); }
+
+        .btn-cta-ghost-dark {
+            background: transparent;
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.35);
+        }
+
+        .btn-cta-ghost-dark:hover {
+            border-color: rgba(255, 255, 255, 0.65);
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .btn-cta-full { width: 100%; padding: 1rem 1.5rem; font-size: 1rem; }
+
+        /* UI UX Pro Max: clear affordance on interactive elements */
+        .btn-cta,
+        .logo-wordmark,
+        .nav-links a,
+        .footer-links a,
+        .modal-close,
+        .modal-overlay.active {
+            cursor: pointer;
+        }
+
+        a:focus-visible,
+        button:focus-visible {
+            outline: 2px solid var(--color-accent);
+            outline-offset: 2px;
+        }
+
+        /* ---------- Hero ---------- */
+        .hero {
+            position: relative;
+            background-color: var(--color-bg-dark);
+            color: #fff;
+            overflow: hidden;
+            padding: 3rem 0 0;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: radial-gradient(ellipse 60% 50% at 30% 40%, rgba(37, 99, 235, 0.14), transparent 65%);
+        }
+
+        .hero-grid {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            gap: 2rem;
+            align-items: start;
+            padding-bottom: 2rem;
+        }
+
+        @media (min-width: 900px) {
+            .hero-grid {
+                grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+                gap: 2.25rem;
+                align-items: center;
+                padding-bottom: 3rem;
+            }
+        }
+
+        .hero-copy {
+            max-width: 26rem;
+        }
+
+        @media (min-width: 900px) {
+            .hero-copy { max-width: 22.5rem; }
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            font-family: var(--font-body);
+            font-weight: 300;
+            font-size: 0.8125rem;
+            color: rgba(255, 255, 255, 0.55);
+            margin-bottom: 1.25rem;
+        }
+
+        .hero-badge-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--color-accent-light);
+            flex-shrink: 0;
+        }
+
+        .hero-badge[dir="ltr"] { direction: ltr; unicode-bidi: embed; }
+
+        .hero-h1 {
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: clamp(1.875rem, 4vw + 1rem, 2.75rem);
+            line-height: 1.14;
+            letter-spacing: -0.035em;
+            margin-bottom: 1.25rem;
+            max-width: 13em;
+        }
+
+        .hero-h1 .line1 { color: #fff; display: block; }
+        .hero-h1 .line2 { color: var(--color-accent-light); display: block; }
+        .hero-h1 .line3 { color: rgba(255, 255, 255, 0.22); display: block; }
+
+        .hero-body {
+            font-family: var(--font-body);
+            font-weight: 300;
+            font-size: 15px;
+            line-height: 1.65;
+            color: rgba(255, 255, 255, 0.72);
+            max-width: 400px;
+            margin-bottom: 1.75rem;
+        }
+
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .installer-download-note {
+            font-weight: 300;
+            font-size: 0.8125rem;
+            color: rgba(255, 255, 255, 0.48);
+            max-width: 28rem;
+            margin-top: 0.35rem;
+            line-height: 1.5;
+        }
+
+        .installer-download-note a {
+            color: rgba(255, 255, 255, 0.78);
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
+
+        .installer-download-note a:hover { color: #fff; }
+
+        /* ---------- Browser mockup ---------- */
+        .mockup-bleed-wrap {
+            position: relative;
+            z-index: 2;
+            margin-bottom: -4rem;
+            padding-bottom: 1rem;
+        }
+
+        @media (min-width: 900px) {
+            .mockup-bleed-wrap { margin-bottom: -5.5rem; }
+        }
+
+        .browser-mockup {
+            background: var(--color-bg);
+            border-radius: 12px;
+            border: 1px solid var(--color-border);
+            box-shadow: 0 24px 48px rgba(6, 9, 31, 0.35);
+            overflow: hidden;
+            color: var(--color-text);
+            max-width: min(100%, 38rem);
+            margin-inline: auto;
+        }
+
+        .browser-chrome {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.65rem 1rem;
+            background: #F5F5FA;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .browser-dots {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .browser-dots span {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .browser-dots span:nth-child(1) { background: #ff5f56; }
+        .browser-dots span:nth-child(2) { background: #ffbd2e; }
+        .browser-dots span:nth-child(3) { background: #27c93f; }
+
+        .browser-url {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: var(--font-body);
+            font-weight: 400;
+            font-size: 0.72rem;
+            color: var(--color-text-muted);
+            background: #fff;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            padding: 0.35rem 0.6rem;
+        }
+
+        .ext-badge-mini {
+            flex-shrink: 0;
+            width: 22px;
+            height: 22px;
+            border-radius: 5px;
+            background: linear-gradient(145deg, var(--color-accent) 0%, #1d4ed8 100%);
+            color: #fff;
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: 0.65rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mock-split {
+            display: grid;
+            grid-template-columns: 1fr;
+        }
+
+        @media (min-width: 560px) {
+            .mock-split {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .mock-panel {
+            padding: 1.25rem;
+            font-size: 0.875rem;
+            line-height: 1.55;
+        }
+
+        .mock-panel-audio {
+            background: #FAFAFB;
+            border-bottom: 1px solid var(--color-border);
+            font-family: var(--font-body);
+            font-weight: 300;
+            color: var(--color-text-muted);
+        }
+
+        @media (min-width: 560px) {
+            .mock-panel-audio {
+                border-bottom: none;
+                border-inline-end: 1px solid var(--color-border);
+            }
+        }
+
+        .mock-panel-output {
+            background: var(--color-bg);
+            font-family: var(--font-body);
+            font-weight: 300;
+            color: var(--color-text);
+        }
+
+        .mock-panel h4 {
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: 0.875rem;
+            letter-spacing: -0.025em;
+            margin-bottom: 0.65rem;
+            color: var(--color-text);
+        }
+
+        .mock-structured-title {
+            font-family: var(--font-display);
+            font-weight: 800;
+            color: var(--color-accent);
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .mock-structured ul {
+            margin: 0;
+            padding-inline-start: 1.1rem;
+            font-weight: 300;
+            font-size: 0.84375rem;
+            color: var(--color-text-muted);
+        }
+
+        .mock-structured li { margin-bottom: 0.35rem; }
+
+        /* ---------- Section primitives ---------- */
+        .section { padding: 5rem 0; }
+        .section-tight-top { padding-top: 6rem; }
+
+        .section-label {
+            display: block;
+            font-family: var(--font-body);
+            font-weight: 500;
+            font-size: 0.75rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--color-accent);
+            margin-bottom: 0.75rem;
+        }
+
+        .section-title {
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: clamp(1.625rem, 3.25vw, 2.05rem);
+            letter-spacing: -0.03em;
+            color: var(--color-text);
+            margin-bottom: 0.5rem;
+            max-width: 22em;
+        }
+
+        .section-intro {
+            font-weight: 300;
+            font-size: 1rem;
+            color: var(--color-text-muted);
+            max-width: 520px;
+            margin-bottom: 2.5rem;
+        }
+
+        /* ---------- Platforms ---------- */
+        .platforms-bar {
+            background: var(--color-bg);
+            border-bottom: 1px solid var(--color-border);
+            padding: 2rem 0;
+            position: relative;
+            z-index: 3;
+        }
+
+        .platforms-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.75rem 1rem;
+        }
+
+        .platforms-row .section-label {
+            margin-bottom: 0;
+            margin-inline-end: 0.5rem;
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.4rem 1rem;
+            border-radius: 9999px;
+            background: var(--color-accent-subtle);
+            color: var(--color-accent);
+            font-family: var(--font-body);
+            font-weight: 400;
+            font-size: 0.8125rem;
+        }
+
+        /* ---------- Stats ---------- */
+        .stats-bar {
+            background: var(--color-stats-bg);
+            border-bottom: 1px solid var(--color-border);
+            padding: 2.25rem 0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            text-align: center;
+        }
+
+        @media (min-width: 768px) {
+            .stats-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+
+        .stat-item .stat-val {
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: 1.0625rem;
+            color: var(--color-text);
+            letter-spacing: -0.02em;
+        }
+
+        .stat-val-en {
+            direction: ltr;
+            unicode-bidi: isolate;
+            display: inline-block;
+        }
+
+        .stat-item .stat-desc {
+            font-weight: 300;
+            font-size: 0.8125rem;
+            color: var(--color-text-muted);
+            margin-top: 0.25rem;
+        }
+
+        /* ---------- Steps ---------- */
+        .steps-list {
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+        }
+
+        .step-row {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 1.25rem 1.5rem;
+            align-items: start;
+        }
+
+        .step-num {
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: clamp(3.5rem, 10vw, 4.5rem);
+            line-height: 1;
+            color: var(--color-border);
+            letter-spacing: -0.05em;
+        }
+
+        .step-body h3 {
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: 1.25rem;
+            letter-spacing: -0.03em;
+            margin-bottom: 0.5rem;
+            color: var(--color-text);
+        }
+
+        .step-body p {
+            font-weight: 300;
+            font-size: 0.9375rem;
+            color: var(--color-text-muted);
+            margin-bottom: 0.75rem;
+            max-width: 520px;
+        }
+
+        /* ---------- Feature grid 2×2 ---------- */
+        .feature-grid-wrap {
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            overflow: hidden;
+            background: var(--color-border);
+            gap: 1px;
+            display: grid;
+            grid-template-columns: 1fr;
+        }
+
+        @media (min-width: 640px) {
+            .feature-grid-wrap {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .feature-card {
+            background: var(--color-bg);
+            padding: 2rem 1.75rem;
+        }
+
+        .feature-icon-wrap {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: var(--color-accent-subtle);
+            color: var(--color-accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+        }
+
+        .feature-card:hover .feature-icon-wrap {
+            background: var(--color-accent);
+            color: #fff;
+            transform: translateY(-1px);
+        }
+
+        .feature-icon-wrap svg {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .feature-card h3 {
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: 1.125rem;
+            letter-spacing: -0.03em;
+            margin-bottom: 0.5rem;
+            color: var(--color-text);
+        }
+
+        .feature-card p {
+            font-weight: 300;
+            font-size: 0.9375rem;
+            color: var(--color-text-muted);
+            line-height: 1.65;
+        }
+
+        /* ---------- Comparison ---------- */
+        .compare-wrap {
+            overflow-x: auto;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            background: var(--color-bg);
+        }
+
+        .compare-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8125rem;
+            min-width: 520px;
+        }
+
+        .compare-table th,
+        .compare-table td {
+            padding: 0.85rem 1rem;
+            text-align: center;
+            border-bottom: 1px solid var(--color-border);
+            font-weight: 300;
+            color: var(--color-text-muted);
+        }
+
+        .compare-table th:first-child,
+        .compare-table td:first-child {
+            text-align: right;
+            font-weight: 500;
+            color: var(--color-text);
+        }
+
+        .compare-table thead th {
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: 0.8125rem;
+            letter-spacing: -0.03em;
+            color: var(--color-text);
+            background: var(--color-stats-bg);
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .compare-table tbody tr:last-child td { border-bottom: none; }
+
+        .compare-table tbody tr.row-bnotes {
+            background: #F8FAFF;
+        }
+
+        .compare-table tbody tr.row-bnotes td {
+            color: var(--color-text);
+            font-weight: 400;
+        }
+
+        .compare-table tbody tr.row-bnotes td:first-child {
+            font-family: var(--font-display);
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            color: var(--color-accent);
+        }
+
+        .compare-table .cell-yes { color: var(--color-accent); font-weight: 500; }
+
+        .compare-table tbody td:first-child {
+            font-weight: 500;
+            color: var(--color-text);
+        }
+
+        .compare-table tbody tr:not(.row-bnotes) td:first-child {
+            font-family: var(--font-body);
+            font-weight: 500;
+            color: var(--color-text-muted);
+        }
+
+        /* ---------- Pricing ---------- */
+        .pricing-section {
+            background: var(--color-bg-dark);
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+            padding: 5rem 0;
+        }
+
+        .pricing-section::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: radial-gradient(ellipse 60% 50% at 30% 40%, rgba(37, 99, 235, 0.14), transparent 65%);
+        }
+
+        .pricing-inner {
+            position: relative;
+            z-index: 1;
+            max-width: 560px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .pricing-section .section-label { color: var(--color-accent-light); }
+
+        .pricing-section .section-title {
+            color: #fff;
+            text-align: center;
+            margin-inline: auto;
+            max-width: 16em;
+        }
+
+        .price-big {
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: clamp(3.5rem, 12vw, 4.5rem);
+            letter-spacing: -0.06em;
+            line-height: 1;
+            margin: 1.5rem 0 1rem;
+        }
+
+        .price-big .shekel { font-size: 0.55em; vertical-align: super; margin-inline-end: 0.15em; }
+        .price-big .accent { color: var(--color-accent-light); }
+
+        .pricing-note {
+            font-weight: 300;
+            font-size: 0.9375rem;
+            color: rgba(255, 255, 255, 0.55);
+            margin-bottom: 2rem;
+        }
+
+        .pricing-features {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.5rem 1.5rem;
+            text-align: right;
+            margin-bottom: 2rem;
+            list-style: none;
+        }
+
+        @media (min-width: 480px) {
+            .pricing-features {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .pricing-features li {
+            font-weight: 300;
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.78);
+            padding-inline-start: 1.25rem;
+            position: relative;
+        }
+
+        .pricing-features li::before {
+            content: '✓';
+            position: absolute;
+            inset-inline-start: 0;
+            color: var(--color-accent-light);
+            font-weight: 700;
+            font-size: 0.75rem;
+        }
+
+        .pricing-footnote {
+            margin-top: 1rem;
+            font-weight: 300;
+            font-size: 0.8125rem;
+            color: rgba(255, 255, 255, 0.45);
+        }
+
+        /* ---------- Windows SmartScreen + FAQ (download help) ---------- */
+        .wg-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            margin-bottom: 3.5rem;
+        }
+
+        .wg-step-card {
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 1.25rem;
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 1rem;
+            align-items: start;
+            background: var(--color-bg);
+        }
+
+        @media (max-width: 480px) {
+            .wg-step-card {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .wg-step-num {
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: 3rem;
+            line-height: 1;
+            color: var(--color-border);
+            min-width: 2.5rem;
+        }
+
+        .wg-step-body h3 {
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: 1.05rem;
+            margin-bottom: 0.35rem;
+            color: var(--color-text);
+        }
+
+        .wg-step-body p {
+            font-weight: 300;
+            font-size: 0.875rem;
+            color: var(--color-text-muted);
+            margin-bottom: 0.75rem;
+        }
+
+        .wg-step-visual {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: center;
+            padding-top: 0.25rem;
+        }
+
+        .wg-step-visual svg {
+            width: 100%;
+            max-width: 280px;
+            height: auto;
+        }
+
+        .wg-check-circle {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: var(--color-accent-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+        }
+
+        .wg-check-circle svg { width: 32px; height: 32px; }
+
+        .wg-faq {
+            border-top: 1px solid var(--color-border);
+            margin-top: 0.5rem;
+        }
+
+        .wg-faq-item input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+            width: 0;
+            height: 0;
+        }
+
+        .wg-faq-item label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 0;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.9375rem;
+            border-bottom: 1px solid var(--color-border);
+            color: var(--color-text);
+        }
+
+        .wg-faq-item label::after {
+            content: '+';
+            flex-shrink: 0;
+            font-weight: 400;
+            color: var(--color-accent);
+            font-size: 1.25rem;
+            line-height: 1;
+            transition: transform 0.2s;
+        }
+
+        .wg-faq-item input:checked + label::after {
+            content: '\2212';
+        }
+
+        .wg-faq-item .wg-faq-a {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+        }
+
+        .wg-faq-item input:checked ~ .wg-faq-a {
+            max-height: 380px;
+        }
+
+        .wg-faq-item .wg-faq-a p {
+            padding: 0 0 1rem;
+            font-weight: 300;
+            font-size: 0.875rem;
+            color: var(--color-text-muted);
+            line-height: 1.55;
+        }
+
+        /* ---------- Footer ---------- */
+        .site-footer {
+            background: var(--color-bg);
+            border-top: 1px solid var(--color-border);
+            padding: 2.25rem 0;
+        }
+
+        .site-footer-inner {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            align-items: flex-start;
+            justify-content: space-between;
+        }
+
+        @media (min-width: 640px) {
+            .site-footer-inner {
+                flex-direction: row;
+                align-items: center;
+            }
+        }
+
+        .footer-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem 1.25rem;
+            font-weight: 400;
+            font-size: 0.875rem;
+            color: var(--color-text-muted);
+        }
+
+        .footer-links a:hover { color: var(--color-accent); }
+
+        .footer-dot { opacity: 0.45; user-select: none; }
+
+        /* ---------- Modals ---------- */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(6, 9, 31, 0.72);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: var(--color-bg);
+            border-radius: 12px;
+            border: 1px solid var(--color-border);
+            width: 100%;
+            max-width: 800px;
+            position: relative;
+            overflow: hidden;
+            transform: translateY(12px);
+            transition: transform 0.25s ease;
+        }
+
+        .modal-overlay.active .modal-content { transform: translateY(0); }
+
+        .modal-close {
+            position: absolute;
+            top: 0.75rem;
+            left: 0.75rem;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid var(--color-border);
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            font-size: 1.35rem;
+            line-height: 1;
+            color: var(--color-text-muted);
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .video-modal-content { padding: 0; background: #000; }
+
+        .mobile-sticky-cta {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--color-bg);
+            padding: 1rem;
+            border-top: 1px solid var(--color-border);
+            z-index: 99;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+            display: none;
+            box-shadow: 0 -8px 24px rgba(6, 9, 31, 0.06);
+        }
+
+        .mobile-sticky-cta.visible { transform: translateY(0); }
+
+        @media (max-width: 767px) {
+            .mobile-sticky-cta { display: block; }
+        }
+
+        /* ---------- Motion ---------- */
+        .fade-up {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.65s ease, transform 0.65s ease;
+        }
+
+        .fade-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .delay-1 { transition-delay: 0.08s; }
+        .delay-2 { transition-delay: 0.16s; }
+        .delay-3 { transition-delay: 0.24s; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .fade-up {
+                opacity: 1;
+                transform: none;
+                transition: none;
+            }
+            .mobile-sticky-cta {
+                transition: none;
+            }
+            .feature-card:hover .feature-icon-wrap {
+                transform: none;
+            }
+            .feature-icon-wrap {
+                transition: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- מתקין Windows: רק דרך GitHub Releases (לא מתארח ב-Firebase). ריפו: mirirosen/b-notes-releases -->
+
+    <header class="site-nav">
+        <div class="container site-nav-inner">
+            <a href="#hero" class="logo-wordmark" aria-label="B Notes — דף הבית">
+                <span aria-hidden="true"><span class="logo-b">B</span><span class="logo-dot">.</span><span class="logo-notes">Notes</span></span>
+            </a>
+            <nav class="nav-links" aria-label="משנה עיקרית">
+                <a href="#how">How it works</a>
+                <a href="#pricing">Pricing</a>
+                <a href="#windows-warning">התקנה ב‑Windows</a>
+            </nav>
+            <a href="https://github.com/mirirosen/b-notes-releases/releases/latest/download/BNotesInstaller.exe"
+               download="BNotesInstaller.exe"
+               class="btn-cta btn-cta-primary"
+               aria-label="הורד את מתקין B Notes מ-GitHub למחשב Windows">Install free</a>
+        </div>
+    </header>
+
+    <section class="hero" id="hero">
+        <div class="container">
+            <div class="hero-grid">
+                <div class="fade-up hero-copy">
+                    <div class="hero-badge" dir="ltr">
+                        <span class="hero-badge-dot" aria-hidden="true"></span>
+                        B Notes · Chrome Extension · Hebrew-first · v2.1
+                    </div>
+                    <h1 class="hero-h1">
+                        <span class="line1">מה שהמרצה אמר —</span>
+                        <span class="line2">מסודר אוטומטית.</span>
+                        <span class="line3">ישירות מהטאב שלך.</span>
+                    </h1>
+                    <p class="hero-body">
+                        B Notes מאזין לאודיו מהדפדפן, מבין עברית אקדמית וקוד-מתחלף, ומפיק פלט נקי עם כותרות ונקודות מפתח — בלי להוריד קבצים כבדים ובלי להילחם בכתוביות שבורות.
+                    </p>
+                    <div class="hero-actions">
+                        <a href="https://github.com/mirirosen/b-notes-releases/releases/latest/download/BNotesInstaller.exe"
+                           download="BNotesInstaller.exe"
+                           class="btn-cta btn-cta-primary"
+                           aria-label="הורד את מתקין B Notes מ-GitHub למחשב Windows">הורידו מתקין Windows</a>
+                        <button type="button" class="btn-cta btn-cta-ghost-dark" onclick="openVideoModal(event)">צפה בהדגמה</button>
+                    </div>
+                    <p class="installer-download-note">הקובץ יורד ישירות מ־<a href="https://github.com/mirirosen/b-notes-releases/releases/latest" target="_blank" rel="noopener noreferrer">GitHub Releases</a> (לא נשמר באתר זה). לא נדרש חשבון GitHub.</p>
+                </div>
+
+                <div class="mockup-bleed-wrap fade-up delay-1">
+                    <div class="browser-mockup" dir="ltr">
+                        <div class="browser-chrome">
+                            <div class="browser-dots"><span></span><span></span><span></span></div>
+                            <div class="browser-url">
+                                <span class="ext-badge-mini" title="B Notes" aria-label="B Notes">B</span>
+                                <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">panopto.example.ac.il/Panopto/Pages/Viewer.aspx</span>
+                    </div>
+                </div>
+                        <div class="mock-split">
+                            <div class="mock-panel mock-panel-audio">
+                                <span class="font-mono-label">Raw audio stream</span>
+                                <h4 style="margin-top:0.5rem;font-size:0.8125rem;">גוש טקסט מתומלל</h4>
+                                <p style="margin-top:0.65rem;line-height:1.65;">
+                                    אז הבעיה עם האש כזאת שהיא לא מתכנסת לצומת של זמן פולינומי כמו אלגוריתם דייקסטרה רגיל ואז אם אתם זוכרים מה שדיברנו בשיעור הקודם על הניסוח של הבעיה עם הפונקציה הפוטנציאלית והמשקולות על הקשתות זה בעצם מה שנותן לנו את המסגרת להוכיח את הקורקטיות של האלגוריתם גם כשיש משקלים שליליים על הקשתות בתנאי שאין מעגלים שליליים בגרף
+                                </p>
+                    </div>
+                            <div class="mock-panel mock-panel-output">
+                                <span class="font-mono-label">B Notes output</span>
+                                <div class="mock-structured" style="margin-top:0.5rem;">
+                                    <div class="mock-structured-title">תזכיר שיעור · אלגוריתמים</div>
+                                    <ul>
+                                        <li><strong style="color:var(--color-text);font-weight:500;">Bellman–Ford</strong> — התכנסות ללא צומת זמן פולינומי בהכרח (שונה מדייקסטרה).</li>
+                                        <li><strong style="color:var(--color-text);font-weight:500;">פוטנציאל ומשקולות</strong> — המסגרת מהשיעור הקודם לטיעון קורקטיות.</li>
+                                        <li><strong style="color:var(--color-text);font-weight:500;">משקלים שליליים</strong> — מותרים אם אין מחזורים שליליים בגרף.</li>
+                                    </ul>
+                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="platforms-bar section-tight-top">
+        <div class="container platforms-row">
+            <span class="section-label">Works on</span>
+            <span class="chip">YouTube</span>
+            <span class="chip">Zoom</span>
+            <span class="chip">Google Meet</span>
+            <span class="chip">Loom</span>
+            <span class="chip">Panopto</span>
+            <span class="chip">+ anywhere</span>
+                    </div>
+    </section>
+
+    <section class="stats-bar">
+        <div class="container stats-grid">
+            <div class="stat-item fade-up">
+                <div class="stat-val"><span class="stat-val-en">Built for coursework</span></div>
+                <div class="stat-desc">מותאם לשגרת סמסטר ולהקלטות מהקמפוס</div>
+                    </div>
+            <div class="stat-item fade-up delay-1">
+                <div class="stat-val"><span class="stat-val-en">Any Platform</span></div>
+                <div class="stat-desc">כל מה שנשמע בכרום</div>
+                </div>
+            <div class="stat-item fade-up delay-2">
+                <div class="stat-val"><span class="stat-val-en">Hebrew First</span></div>
+                <div class="stat-desc">דיוק על סגנון אקדמי</div>
+            </div>
+            <div class="stat-item fade-up delay-3">
+                <div class="stat-val"><span class="stat-val-en">1‑click to start</span></div>
+                <div class="stat-desc">התקנה מהירה</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" id="how">
+        <div class="container">
+            <span class="section-label fade-up">How it works</span>
+            <h2 class="section-title fade-up delay-1">שלושה צעדים ויש לך מסמך למידה</h2>
+            <p class="section-intro fade-up delay-2">בלי סקריפטים, בלי הרצת קוד — מתקינים, פותחים הרצאה, ומקבלים פלט מוכן לחזרה ולשיתוף.</p>
+
+            <div class="steps-list">
+                <div class="step-row fade-up">
+                    <div class="step-num">01</div>
+                    <div class="step-body">
+                        <h3>מורידים את מתקין Windows</h3>
+                        <p>מורידים את <strong style="font-weight:500;color:var(--color-text);">BNotesInstaller.exe</strong> מדף ה־<a href="https://github.com/mirirosen/b-notes-releases/releases/latest" target="_blank" rel="noopener noreferrer">Releases ב-GitHub</a> (כפתור ההורדה באתר מפנה לשם), מריצים כמנהל ומאשרים את ההתקנה — התוסף יוזן לכרום/Edge לפי המדיניות שהמתקין מגדיר.</p>
+                        <span class="chip">BNotesInstaller.exe</span>
+                    </div>
+                </div>
+                <div class="step-row fade-up delay-1">
+                    <div class="step-num">02</div>
+                    <div class="step-body">
+                        <h3>פותחים כרטיסייה והרצאה</h3>
+                        <p>B Notes מאזין לאודיו מהטאב הפעיל — Panopto, Moodle, Zoom או כל נגן אחר. מה שנשמע במספרים שלך נכנס למערכת.</p>
+                        <span class="chip">Live audio capture</span>
+                    </div>
+                </div>
+                <div class="step-row fade-up delay-2">
+                    <div class="step-num">03</div>
+                    <div class="step-body">
+                        <h3>מקבלים תזכיר מובנה</h3>
+                        <p>כותרות, נקודות וציטוטים מסודרים — קל לסкан בעין, קל לשלב עם מדריכי לימוד ועם העדפות העבודה שלך.</p>
+                        <span class="chip">Structured notes</span>
+                    </div>
+                </div>
+                    </div>
+                </div>
+    </section>
+
+    <section class="section" style="padding-top:0;">
+        <div class="container">
+            <span class="section-label fade-up">Features</span>
+            <h2 class="section-title fade-up delay-1">מה אתה מקבל מתוך הקופסה</h2>
+            <p class="section-intro fade-up delay-2">ארבעה יכולות מרכזיות שנשארות בתמונה גם כשהפלטפורמה משתנה.</p>
+
+            <div class="feature-grid-wrap fade-up delay-3">
+                <div class="feature-card">
+                    <div class="feature-icon-wrap" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14v3a3 3 0 0 0 3 3h1"/><path d="M21 14v3a3 3 0 0 1-3 3h-1"/><path d="M3 14a7 7 0 0 1 7-7h4a7 7 0 0 1 7 7"/><path d="M9 14v7"/><path d="M15 14v7"/></svg>
+                    </div>
+                    <h3>אודיו נקי מהדפדפן</h3>
+                    <p>לא תלוי בכתוביות קיימות. אם השיעור מתנגן בכרום — ניתן לתמלל ברצף יציב.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon-wrap" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg>
+                    </div>
+                    <h3>עברית אקדמית ובינגוליש</h3>
+                    <p>מוכן למונחים באנגלית בתוך משפט בעברית, ולקצב של הרצאות במוסדות ישראליים.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon-wrap" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </div>
+                    <h3>קפיצה לפי זמן</h3>
+                    <p>חיבור טקסט לציר הזמן של ההקלטה — חוזרים לנקודה המדויקת בלי לגלול סרטון כולו.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon-wrap" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>
+                    </div>
+                    <h3>פלט נקי לעבודה</h3>
+                    <p>כותרות וסעיפים שנוח להדביק למסמכים, כרטיסיות וערימות חומר לפני מבחן.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="container">
+            <span class="section-label fade-up">Why B Notes</span>
+            <h2 class="section-title fade-up delay-1">למה לא עושים את זה עם כלי כללי?</h2>
+            <p class="section-intro fade-up delay-2">השוואה קצרה למה שסטודנטים מנסים לפני שהם מתקינים תוסף ייעודי להרצאות כמו B Notes.</p>
+
+            <div class="compare-wrap fade-up delay-3">
+                <table class="compare-table">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>תמלול מאודיו שיעור בכרום</th>
+                            <th>עברית אקדמית אמיתית</th>
+                            <th>זרימה ליד ההרצאה</th>
+                            <th>חוויה לסטודנטים בישראל</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>ChatGPT</td>
+                            <td>לא בשוטף</td>
+                            <td>משתנה</td>
+                            <td>מחוץ לטאב</td>
+                            <td>כללי</td>
+                        </tr>
+                        <tr>
+                            <td>Google Meet</td>
+                            <td>רק בפגישה</td>
+                            <td>חלש</td>
+                            <td>בתוך Meet</td>
+                            <td>כללי</td>
+                        </tr>
+                        <tr>
+                            <td>Otter.ai</td>
+                            <td>חלקי</td>
+                            <td>בינוני</td>
+                            <td>אפליקציה נפרדת</td>
+                            <td>כללי</td>
+                        </tr>
+                        <tr class="row-bnotes">
+                            <td>B Notes</td>
+                            <td class="cell-yes">ישיר מהטאב</td>
+                            <td class="cell-yes">ממוקד</td>
+                            <td class="cell-yes">בצד המסך</td>
+                            <td class="cell-yes">נבנה לזה</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <section class="pricing-section" id="pricing">
+        <div class="container pricing-inner">
+            <span class="section-label fade-up">Pricing</span>
+            <h2 class="section-title fade-up delay-1">מינוי פשוט אחרי שמתקינים את B Notes</h2>
+            <div class="price-big fade-up delay-2">
+                <span class="shekel">₪</span>9<span class="accent">.99</span>
+            </div>
+            <p class="pricing-note fade-up delay-2">לחודש · ניתן לבטל בכל עת</p>
+            <ul class="pricing-features fade-up delay-3">
+                <li>דקות תמלול נדיבות לשגרת סמסטר</li>
+                <li>פלט מובנה עם כותרות וסעיפים</li>
+                <li>תמיכה במגוון נגנים אקדמיים</li>
+                <li>עדכונים שוטפים לתוסף B Notes</li>
+                <li>ממשק צד ליד ההרצאה</li>
+                <li>תשומת לב לעברית בפועל בשטח</li>
+            </ul>
+            <a href="https://github.com/mirirosen/b-notes-releases/releases/latest/download/BNotesInstaller.exe"
+               download="BNotesInstaller.exe"
+               class="btn-cta btn-cta-primary btn-cta-full"
+               aria-label="הורד את מתקין B Notes מ-GitHub למחשב Windows">Install free</a>
+            <p class="pricing-footnote">הורדת המתקין דרך GitHub בלבד · ללא כרטיס אשראי</p>
+        </div>
+    </section>
+
+    <section class="section" id="windows-warning">
+        <div class="container">
+            <h2 class="section-title fade-up">Windows עלול להציג אזהרה</h2>
+            <p class="section-intro fade-up delay-1">זה נורמלי לאפליקציות חדשות. שלושה צעדים קצרים וההתקנה נמשכת:</p>
+
+            <div class="wg-steps">
+                <article class="wg-step-card fade-up delay-1">
+                    <div class="wg-step-num" aria-hidden="true">1</div>
+                    <div class="wg-step-body">
+                        <h3>לחצו על «מידע נוסף»</h3>
+                        <p>Windows SmartScreen מופיע לאפליקציות שעדיין לא נצבר להן מוניטין רחב. בתיבת האזהרה יש קישור קטן — זה המסלול הבטוח להמשיך.</p>
+                    </div>
+                    <div class="wg-step-visual" dir="ltr" aria-hidden="true">
+                        <svg viewBox="0 0 280 200" xmlns="http://www.w3.org/2000/svg" role="img">
+                            <rect width="280" height="200" fill="#f3f4f6" rx="8"/>
+                            <rect x="12" y="12" width="256" height="28" fill="#1e3a5f" rx="4"/>
+                            <circle cx="26" cy="26" r="5" fill="#ff5f56"/><circle cx="40" cy="26" r="5" fill="#ffbd2e"/><circle cx="54" cy="26" r="5" fill="#27c93f"/>
+                            <rect x="12" y="48" width="256" height="140" fill="#fff" rx="4"/>
+                            <text x="140" y="74" text-anchor="middle" fill="#0A0A14" font-family="Segoe UI,system-ui,sans-serif" font-size="10" font-weight="700">Windows הגן על המחשב שלך</text>
+                            <text x="140" y="94" text-anchor="middle" fill="#555" font-family="Segoe UI,system-ui,sans-serif" font-size="8">אפליקציה לא מוכרת</text>
+                            <text x="140" y="138" text-anchor="middle" fill="#2563EB" font-family="Segoe UI,system-ui,sans-serif" font-size="9.5" font-weight="600" text-decoration="underline">מידע נוסף</text>
+                        </svg>
+                    </div>
+                </article>
+
+                <article class="wg-step-card fade-up delay-2">
+                    <div class="wg-step-num" aria-hidden="true">2</div>
+                    <div class="wg-step-body">
+                        <h3>לחצו על «הפעל בכל זאת»</h3>
+                        <p>אחרי שלב 1 מופיע כפתור הרצה. זה מאשר שאתם מודעים למקור הקובץ ומבקשים להמשיך.</p>
+                    </div>
+                    <div class="wg-step-visual" dir="ltr" aria-hidden="true">
+                        <svg viewBox="0 0 280 200" xmlns="http://www.w3.org/2000/svg" role="img">
+                            <rect width="280" height="200" fill="#f3f4f6" rx="8"/>
+                            <rect x="12" y="12" width="256" height="28" fill="#1e3a5f" rx="4"/>
+                            <circle cx="26" cy="26" r="5" fill="#ff5f56"/><circle cx="40" cy="26" r="5" fill="#ffbd2e"/><circle cx="54" cy="26" r="5" fill="#27c93f"/>
+                            <rect x="12" y="48" width="256" height="140" fill="#fff" rx="4"/>
+                            <text x="140" y="74" text-anchor="middle" fill="#0A0A14" font-family="Segoe UI,system-ui,sans-serif" font-size="10" font-weight="700">Windows הגן על המחשב שלך</text>
+                            <rect x="55" y="112" width="170" height="34" fill="#2563EB" rx="4"/>
+                            <text x="140" y="134" text-anchor="middle" fill="#fff" font-family="Segoe UI,system-ui,sans-serif" font-size="9.5" font-weight="600">הפעל בכל זאת</text>
+                        </svg>
+                    </div>
+                </article>
+
+                <article class="wg-step-card fade-up delay-3">
+                    <div class="wg-step-num" aria-hidden="true">3</div>
+                    <div class="wg-step-body">
+                        <h3>B Notes מתקין את עצמו</h3>
+                        <p>בסיום ההתקנה Chrome ו‑Edge יזהו את התוסף בהפעלה הבאה של הדפדפן (בהתאם להגדרות המערכת).</p>
+                    </div>
+                    <div class="wg-step-visual">
+                        <div class="wg-check-circle" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 6L9 17l-5-5" stroke="#2563EB" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                    </div>
+                </article>
+            </div>
+
+            <h2 class="section-title fade-up">שאלות על ההתקנה</h2>
+            <p class="section-intro fade-up delay-1" style="margin-bottom:0">תשובות קצרות לפני או אחרי ההורדה מ-GitHub.</p>
+
+            <div class="wg-faq fade-up delay-2">
+                <div class="wg-faq-item">
+                    <input type="radio" name="wg-faq-acc" id="wg-faq1">
+                    <label for="wg-faq1">האם זה בטוח להתקין?</label>
+                    <div class="wg-faq-a">
+                        <p>כן. הקובץ מתפרסם רק דרך GitHub Releases והמתקין נועד להתקין את B Notes ואת התוסף כמתוכנן. האזהרה של Windows נפוצה אצל אפליקציות חדשות עד שנבנה מוניטין — ולא בהכרח מצביעה על בעיה אבטחתית.</p>
+                    </div>
+                </div>
+                <div class="wg-faq-item">
+                    <input type="radio" name="wg-faq-acc" id="wg-faq2">
+                    <label for="wg-faq2">זה עובד גם ב‑Microsoft Edge?</label>
+                    <div class="wg-faq-a">
+                        <p>כן. המתקין מגדיר את התוסף גם ל‑Chrome וגם ל‑Edge במחשבים שבהם מותקנים שניהם.</p>
+                    </div>
+                </div>
+                <div class="wg-faq-item">
+                    <input type="radio" name="wg-faq-acc" id="wg-faq3">
+                    <label for="wg-faq3">איך מסירים את B Notes?</label>
+                    <div class="wg-faq-a">
+                        <p>ב‑Windows: הגדרות ← אפליקציות ← התקנות אפליקציות, חיפוש «B Notes», ובחירה בהסרת התקנה. לאחר מכן כדאי לאמת בהגדרות התוספים בדפדפן שאין התקנה נותרת.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="site-footer">
+        <div class="container site-footer-inner">
+            <div class="logo-wordmark" aria-label="B Notes">
+                <span aria-hidden="true"><span class="logo-b">B</span><span class="logo-dot">.</span><span class="logo-notes">Notes</span></span>
+                    </div>
+                <div class="footer-links">
+                <a href="https://github.com/mirirosen/b-notes-releases" target="_blank" rel="noopener noreferrer" aria-label="מאגר B Notes ב-GitHub">מאגר והורדות</a>
+                <span class="footer-dot" aria-hidden="true">·</span>
+                <a href="https://github.com/mirirosen/b-notes-releases/issues" target="_blank" rel="noopener noreferrer" aria-label="דיווח בעיה ב-GitHub">דיווח בעיה</a>
+                    </div>
+        </div>
+    </footer>
+
+    <div class="mobile-sticky-cta" id="mobileCta">
+        <a href="https://github.com/mirirosen/b-notes-releases/releases/latest/download/BNotesInstaller.exe"
+           download="BNotesInstaller.exe"
+           class="btn-cta btn-cta-primary btn-cta-full"
+           aria-label="הורד את מתקין B Notes מ-GitHub למחשב Windows">Install free</a>
+    </div>
+
+    <div class="modal-overlay" id="videoModal" onclick="closeVideoModal(event)">
+        <div class="modal-content video-modal-content" onclick="event.stopPropagation()">
+            <button type="button" class="modal-close" onclick="closeVideoModal(event)" aria-label="סגור">&times;</button>
+            <video id="demoVideo" controls playsinline style="width: 100%; display: block;">
+                <source src="demo-video.mp4" type="video/mp4">
+                <source src="https://b-notes.web.app/demo-video.mp4" type="video/mp4">
+                הדפדפן שלך אינו תומך בהצגת וידאו.
+            </video>
+        </div>
+    </div>
+
+    <script>
+        function openVideoModal(e) {
+            e.preventDefault();
+            document.getElementById('videoModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+            document.getElementById('demoVideo').play();
+        }
+        function closeVideoModal(e) {
+            if (e) e.preventDefault();
+            document.getElementById('videoModal').classList.remove('active');
+            document.body.style.overflow = '';
+            document.getElementById('demoVideo').pause();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const observer = new IntersectionObserver((entries, obs) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        obs.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.12 });
+            document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+            const mobileCta = document.getElementById('mobileCta');
+            const heroSection = document.getElementById('hero');
+
+            window.addEventListener('scroll', () => {
+                if (heroSection && mobileCta) {
+                    if (window.scrollY > heroSection.offsetHeight - 80) {
+                        mobileCta.classList.add('visible');
+                } else {
+                        mobileCta.classList.remove('visible');
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

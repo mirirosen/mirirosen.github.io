@@ -2,6 +2,6 @@
 <!-- update manifest; hosted at https://mirirosen.github.io — points to extension.crx -->
 <gupdate xmlns="http://www.google.com/update2/response" protocol="2.0">
   <app appid="djdmbmibfjjmgoacidjlnholckcaplli">
-    <updatecheck codebase="https://mirirosen.github.io/extension.crx" version="1.0.7" />
+    <updatecheck codebase="https://mirirosen.github.io/extension.crx" version="1.0.8" />
   </app>
 </gupdate>
